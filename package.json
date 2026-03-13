@@ -13,7 +13,6 @@
     "url": "https://github.com/mmarj-am/file-info-explorer/issues"
   },
   "homepage": "https://github.com/mmarj-am/file-info-explorer#readme",
-  "icon": "images/icon.png",
   "engines": {
     "vscode": "^1.74.0"
   },
