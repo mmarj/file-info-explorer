@@ -1,0 +1,133 @@
+{
+  "name": "file-info-explorer",
+  "displayName": "File Info Explorer",
+  "description": "Shows last modified dates and sticky notes for files and folders in the Explorer.",
+  "version": "0.2.0",
+  "publisher": "mmarj-am",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/mmarj-am/file-info-explorer.git"
+  },
+  "bugs": {
+    "url": "https://github.com/mmarj-am/file-info-explorer/issues"
+  },
+  "homepage": "https://github.com/mmarj-am/file-info-explorer#readme",
+  "icon": "images/icon.png",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "categories": ["Other"],
+  "keywords": ["explorer", "file", "date", "modified", "notes", "annotations"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./out/extension.js",
+  "contributes": {
+    "views": {
+      "explorer": [
+        {
+          "id": "fileInfoExplorer",
+          "name": "File Info",
+          "icon": "$(info)",
+          "contextualTitle": "File Info"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "fileInfo.addNote",
+        "title": "Add / Edit Note",
+        "category": "File Info"
+      },
+      {
+        "command": "fileInfo.removeNote",
+        "title": "Remove Note",
+        "category": "File Info"
+      },
+      {
+        "command": "fileInfo.refresh",
+        "title": "Refresh",
+        "category": "File Info",
+        "icon": "$(refresh)"
+      }
+    ],
+    "menus": {
+      "explorer/context": [
+        {
+          "command": "fileInfo.addNote",
+          "group": "fileInfo@1",
+          "when": "explorerResourceIsFolder || !explorerResourceIsFolder"
+        },
+        {
+          "command": "fileInfo.removeNote",
+          "group": "fileInfo@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "fileInfo.addNote",
+          "when": "view == fileInfoExplorer",
+          "group": "fileInfo@1"
+        },
+        {
+          "command": "fileInfo.removeNote",
+          "when": "view == fileInfoExplorer && viewItem == hasNote",
+          "group": "fileInfo@2"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "fileInfo.refresh",
+          "when": "view == fileInfoExplorer",
+          "group": "navigation"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "File Info Explorer",
+      "properties": {
+        "fileInfo.showDateOnHover": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the last modified date in the tooltip when hovering over files and folders in the Explorer."
+        },
+        "fileInfo.dateFormat": {
+          "type": "string",
+          "enum": ["short", "relative", "full"],
+          "enumDescriptions": [
+            "Mar 12, 2:14 PM — compact and readable",
+            "2h ago, 3d ago — relative to now",
+            "3/12/2026, 14:14:00 — exact timestamp"
+          ],
+          "default": "short",
+          "description": "Date format used in tooltips and the File Info panel."
+        },
+        "fileInfo.showNoteBadge": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show a ✎ badge on files and folders that have a note."
+        },
+        "fileInfo.tooltipStyle": {
+          "type": "string",
+          "enum": ["compact", "detailed", "card"],
+          "enumDescriptions": [
+            "compact — single line: filename · date · note",
+            "detailed — multi-line with bold labels (default)",
+            "card — sectioned layout with dividers and headers"
+          ],
+          "default": "detailed",
+          "description": "Visual layout style for file info tooltips. Note: tooltip position (left/right/above/below) is controlled by the IDE based on available screen space and cannot be set by extensions."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run compile"
+  },
+  "devDependencies": {
+    "@types/node": "^18.0.0",
+    "@types/vscode": "^1.74.0",
+    "typescript": "^5.0.0"
+  }
+}
