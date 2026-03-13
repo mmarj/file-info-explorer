@@ -2,7 +2,7 @@
 
 A VS Code / Cursor extension that shows **last modified dates** and **sticky notes** directly in the Explorer sidebar — on every file and folder, inline.
 
-![File Info Explorer screenshot placeholder](images/screenshot.png)
+![File Info Explorer demo](images/demo.gif)
 
 ---
 
