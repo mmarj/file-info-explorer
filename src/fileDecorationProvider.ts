@@ -1,6 +1,11 @@
 import * as vscode from 'vscode';
 import { NotesManager } from './notesManager';
 import { buildPlainTooltip, TooltipStyle } from './tooltipBuilder';
+import {
+  FileMeta,
+  isImageFile, isCsvFile,
+  readImageMeta, readCsvMeta, countFolderEntries,
+} from './fileMetaReader';
 
 export class FileDecorationProvider implements vscode.FileDecorationProvider {
   private _onDidChange = new vscode.EventEmitter<vscode.Uri | vscode.Uri[]>();
@@ -40,8 +45,22 @@ export class FileDecorationProvider implements vscode.FileDecorationProvider {
       try {
         const stat = await vscode.workspace.fs.stat(uri);
         const mtime = new Date(stat.mtime);
-        const size = stat.type === vscode.FileType.File ? stat.size : undefined;
-        tooltip = buildPlainTooltip(mtime, note ?? undefined, tooltipStyle, dateFormat, size);
+        const isFile = stat.type === vscode.FileType.File;
+        const isDir  = stat.type === vscode.FileType.Directory;
+        const size   = isFile ? stat.size : undefined;
+
+        let meta: FileMeta | undefined;
+        if (isFile) {
+          if (isImageFile(uri.fsPath)) {
+            try { const image = readImageMeta(uri.fsPath); if (image) meta = { image }; } catch { /* skip */ }
+          } else if (isCsvFile(uri.fsPath)) {
+            try { const csv = readCsvMeta(uri.fsPath); if (csv) meta = { csv }; } catch { /* skip */ }
+          }
+        } else if (isDir) {
+          try { meta = { folderCount: countFolderEntries(uri.fsPath) }; } catch { /* skip */ }
+        }
+
+        tooltip = buildPlainTooltip(mtime, note ?? undefined, tooltipStyle, dateFormat, size, meta);
       } catch {
         // File may not be accessible (e.g. permission denied) — skip
         if (note) {

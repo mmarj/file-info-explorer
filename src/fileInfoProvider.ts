@@ -4,6 +4,11 @@ import * as path from 'path';
 import { NotesManager } from './notesManager';
 import { formatDate } from './dateFormatter';
 import { buildRichTooltip, TooltipStyle } from './tooltipBuilder';
+import {
+  FileMeta,
+  isImageFile, isCsvFile,
+  readImageMeta, readCsvMeta, countFolderEntries,
+} from './fileMetaReader';
 
 // ─── Tree Item ────────────────────────────────────────────────────────────────
 
@@ -13,7 +18,8 @@ export class FileInfoItem extends vscode.TreeItem {
     collapsibleState: vscode.TreeItemCollapsibleState,
     mtime: Date,
     notes: NotesManager,
-    size?: number
+    size?: number,
+    meta?: FileMeta
   ) {
     super(resourceUri, collapsibleState);
 
@@ -28,7 +34,7 @@ export class FileInfoItem extends vscode.TreeItem {
     this.description = formatDate(mtime, dateFormat);
 
     // Rich tooltip
-    this.tooltip = buildRichTooltip(resourceUri.fsPath, mtime, note ?? undefined, tooltipStyle, isDir, size);
+    this.tooltip = buildRichTooltip(resourceUri.fsPath, mtime, note ?? undefined, tooltipStyle, isDir, size, meta);
 
     // Context value controls which menu items appear
     this.contextValue = hasNote ? 'hasNote' : 'noNote';
@@ -129,20 +135,32 @@ export class FileInfoProvider implements vscode.TreeDataProvider<FileInfoItem> {
     let mtime = new Date();
     let isDir = false;
     let size: number | undefined;
+    let meta: FileMeta | undefined;
 
     try {
       const stat = fs.statSync(uri.fsPath);
       mtime = stat.mtime;
       isDir = stat.isDirectory();
-      size = isDir ? getDirSize(uri.fsPath) : stat.size;
+
+      if (isDir) {
+        size = getDirSize(uri.fsPath);
+        try { meta = { folderCount: countFolderEntries(uri.fsPath) }; } catch { /* skip */ }
+      } else {
+        size = stat.size;
+        if (isImageFile(uri.fsPath)) {
+          try { const image = readImageMeta(uri.fsPath); if (image) meta = { image }; } catch { /* skip */ }
+        } else if (isCsvFile(uri.fsPath)) {
+          try { const csv = readCsvMeta(uri.fsPath); if (csv) meta = { csv }; } catch { /* skip */ }
+        }
+      }
     } catch {
-      // Inaccessible file — use current time as fallback
+      // Inaccessible — use defaults
     }
 
     const collapsibleState = isDir
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    return new FileInfoItem(uri, collapsibleState, mtime, this.notes, size);
+    return new FileInfoItem(uri, collapsibleState, mtime, this.notes, size, meta);
   }
 }
