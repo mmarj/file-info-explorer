@@ -40,7 +40,8 @@ export class FileDecorationProvider implements vscode.FileDecorationProvider {
       try {
         const stat = await vscode.workspace.fs.stat(uri);
         const mtime = new Date(stat.mtime);
-        tooltip = buildPlainTooltip(mtime, note ?? undefined, tooltipStyle, dateFormat);
+        const size = stat.type === vscode.FileType.File ? stat.size : undefined;
+        tooltip = buildPlainTooltip(mtime, note ?? undefined, tooltipStyle, dateFormat, size);
       } catch {
         // File may not be accessible (e.g. permission denied) — skip
         if (note) {

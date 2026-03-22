@@ -12,7 +12,8 @@ export class FileInfoItem extends vscode.TreeItem {
     public readonly resourceUri: vscode.Uri,
     collapsibleState: vscode.TreeItemCollapsibleState,
     mtime: Date,
-    notes: NotesManager
+    notes: NotesManager,
+    size?: number
   ) {
     super(resourceUri, collapsibleState);
 
@@ -27,7 +28,7 @@ export class FileInfoItem extends vscode.TreeItem {
     this.description = formatDate(mtime, dateFormat);
 
     // Rich tooltip
-    this.tooltip = buildRichTooltip(resourceUri.fsPath, mtime, note ?? undefined, tooltipStyle, isDir);
+    this.tooltip = buildRichTooltip(resourceUri.fsPath, mtime, note ?? undefined, tooltipStyle, isDir, size);
 
     // Context value controls which menu items appear
     this.contextValue = hasNote ? 'hasNote' : 'noNote';
@@ -50,6 +51,24 @@ export class FileInfoItem extends vscode.TreeItem {
         arguments: [resourceUri],
       };
     }
+  }
+}
+
+// ─── Size Helper ──────────────────────────────────────────────────────────────
+
+function getDirSize(dirPath: string): number {
+  try {
+    const entries = fs.readdirSync(dirPath, { withFileTypes: true });
+    return entries.reduce((total: number, entry: fs.Dirent) => {
+      try {
+        const entryPath = path.join(dirPath, entry.name);
+        return total + (entry.isDirectory() ? getDirSize(entryPath) : fs.statSync(entryPath).size);
+      } catch {
+        return total;
+      }
+    }, 0);
+  } catch {
+    return 0;
   }
 }
 
@@ -109,11 +128,13 @@ export class FileInfoProvider implements vscode.TreeDataProvider<FileInfoItem> {
   private makeItem(uri: vscode.Uri): FileInfoItem {
     let mtime = new Date();
     let isDir = false;
+    let size: number | undefined;
 
     try {
       const stat = fs.statSync(uri.fsPath);
       mtime = stat.mtime;
       isDir = stat.isDirectory();
+      size = isDir ? getDirSize(uri.fsPath) : stat.size;
     } catch {
       // Inaccessible file — use current time as fallback
     }
@@ -122,6 +143,6 @@ export class FileInfoProvider implements vscode.TreeDataProvider<FileInfoItem> {
       ? vscode.TreeItemCollapsibleState.Collapsed
       : vscode.TreeItemCollapsibleState.None;
 
-    return new FileInfoItem(uri, collapsibleState, mtime, this.notes);
+    return new FileInfoItem(uri, collapsibleState, mtime, this.notes, size);
   }
 }
