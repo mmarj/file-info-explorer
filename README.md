@@ -1,6 +1,6 @@
 # File Info Explorer
 
-A VS Code / Cursor extension that shows **last modified dates** and **sticky notes** directly in the Explorer sidebar — on every file and folder, inline.
+A VS Code / Cursor extension that shows **last modified dates**, **file/folder sizes**, and **sticky notes** directly in the Explorer sidebar — on every file and folder, inline.
 
 ![File Info Explorer demo](images/demo.gif)
 
@@ -9,7 +9,8 @@ A VS Code / Cursor extension that shows **last modified dates** and **sticky not
 ## Features
 
 - **Modified date** shown to the right of every file and folder name in the Explorer
-- **Hover tooltip** with full date/time details (and note if set)
+- **File/folder size** in hover tooltips — files show their size; folders show their total recursive size (B, KB, MB, GB)
+- **Hover tooltip** with full date/time and size details (and note if set)
 - **Sticky notes** — attach a short note to any file or folder; shows as a `✎` badge and appears in the tooltip
 - **Three tooltip styles** — compact, detailed, or card layout
 - **Three date formats** — short (`Mar 12, 2:14 PM`), relative (`2h ago`), or full timestamp
@@ -29,7 +30,7 @@ A VS Code / Cursor extension that shows **last modified dates** and **sticky not
 ### From source
 
 ```bash
-git clone https://github.com/mmarj-am/file-info-explorer.git
+git clone https://github.com/mmarj/file-info-explorer.git
 cd file-info-explorer
 npm install
 npm run compile
@@ -69,13 +70,14 @@ Dates appear automatically in the Explorer sidebar as a grayed-out description n
 
 **compact** — everything on one line:
 ```
-📄 README.md  ·  Mar 12, 2:14 PM  ·  ✎ Check before merging
+📄 README.md  ·  Mar 12, 2:14 PM  ·  4.2 KB  ·  ✎ Check before merging
 ```
 
 **detailed** *(default)* — labeled rows with icons:
 ```
 📄 README.md
 📅 Modified: March 12, 2026 at 2:14 PM
+📦 Size: 4.2 KB
 ✎  Note: Check before merging
 ```
 
