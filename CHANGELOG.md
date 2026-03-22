@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0]
+
+- Display file size in hover tooltips for files in the native Explorer and File Info panel
+- Display total folder size (recursive) in hover tooltips for folders in the File Info panel
+- Size shown in human-readable format: B, KB, MB, GB
+- Size appears in all three tooltip styles: compact, detailed, and card
+
 ## [0.2.0]
 
 - Add `fileInfo.tooltipStyle` setting with three layout options: `compact`, `detailed`, `card`
