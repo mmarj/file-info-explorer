@@ -2,7 +2,7 @@
   "name": "file-info-explorer",
   "displayName": "File Info Explorer",
   "description": "Shows last modified dates and sticky notes for files and folders in the Explorer.",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "publisher": "mmarj",
   "icon": "images/icon.png",
   "license": "MIT",

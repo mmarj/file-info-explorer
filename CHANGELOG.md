@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0]
+
+- Display image dimensions (width × height) on hover for PNG, JPEG, GIF, WebP, BMP, SVG, ICO — zero dependencies, parsed from raw file headers
+- Display CSV/TSV column count and header names on hover
+- Display folder contents count (files and subfolders) on hover for directories
+- Extension icon added
+
 ## [0.3.0]
 
 - Display file size in hover tooltips for files in the native Explorer and File Info panel
