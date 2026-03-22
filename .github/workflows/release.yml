@@ -1,16 +1,16 @@
 name: Release
 
-# Runs when you push a version tag like v0.2.0
+# Runs when you push a version tag like v0.3.0
 on:
   push:
     tags:
       - 'v*.*.*'
 
 jobs:
-  build-and-release:
+  release:
     runs-on: ubuntu-latest
     permissions:
-      contents: write  # needed to create GitHub Releases
+      contents: write
 
     steps:
       - name: Checkout
@@ -39,11 +39,15 @@ jobs:
         with:
           name: v${{ steps.version.outputs.VERSION }}
           body: |
-            ## Install
-
-            1. Download `file-info-explorer-${{ steps.version.outputs.VERSION }}.vsix` below
-            2. In VS Code / Cursor: `Cmd+Shift+P` → **Extensions: Install from VSIX...**
-            3. Select the downloaded file and reload the window
-
             See [CHANGELOG.md](CHANGELOG.md) for what changed in this version.
+
+            ## Install via VSIX (manual)
+            1. Download `file-info-explorer-${{ steps.version.outputs.VERSION }}.vsix` below
+            2. `Cmd+Shift+P` → **Extensions: Install from VSIX...** → select the file
           files: "*.vsix"
+
+      - name: Publish to VS Code Marketplace
+        run: npx vsce publish --no-dependencies --allow-missing-repository -p ${{ secrets.VSCE_PAT }}
+
+      - name: Publish to OpenVSX
+        run: npx ovsx publish *.vsix -p ${{ secrets.OVSX_TOKEN }}
