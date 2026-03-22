@@ -3,7 +3,7 @@
   "displayName": "File Info Explorer",
   "description": "Shows last modified dates and sticky notes for files and folders in the Explorer.",
   "version": "0.3.0",
-  "publisher": "mmarj-am",
+  "publisher": "mmarj",
   "license": "MIT",
   "repository": {
     "type": "git",
