@@ -13,7 +13,8 @@ A VS Code / Cursor extension that shows **last modified dates**, **file/folder s
 - **Hover tooltip** with full date/time and size details (and note if set)
 - **Sticky notes** — attach a short note to any file or folder; shows as a `✎` badge and appears in the tooltip
 - **Three tooltip styles** — compact, detailed, or card layout
-- **Three date formats** — short (`Mar 12, 2:14 PM`), relative (`2h ago`), or full timestamp
+- **Relative and full modified times** — see how long ago a file changed plus the exact timestamp
+- **Optional metadata** — type, created time, line count, Git status, TODO/FIXME count, JSON/Markdown stats, hashes, permissions, and more
 - **File Info panel** — a dedicated panel in the Explorer sidebar listing all files with dates and notes
 - Works in **VS Code**, **Cursor**, and **Antigravity**
 
@@ -62,34 +63,68 @@ Dates appear automatically in the Explorer sidebar as a grayed-out description n
 | Setting | Type | Default | Description |
 |---|---|---|---|
 | `fileInfo.showDateOnHover` | boolean | `true` | Show modified date in Explorer tooltips |
-| `fileInfo.dateFormat` | string | `short` | `short`, `relative`, or `full` |
+| `fileInfo.timeZoneOffset` | string | `system` | `system`, or a fixed UTC offset like `UTC+8` |
 | `fileInfo.showNoteBadge` | boolean | `true` | Show `✎` badge on files with notes |
 | `fileInfo.tooltipStyle` | string | `detailed` | `compact`, `detailed`, or `card` |
 
+### Metadata toggles
+
+Each metadata group can be enabled or disabled in Settings:
+
+| Setting | Default | Shows |
+|---|---:|---|
+| `fileInfo.showFileSize` | `true` | File size |
+| `fileInfo.showFolderSize` | `true` | Recursive folder size in the File Info panel |
+| `fileInfo.showImageDimensions` | `true` | Image width × height |
+| `fileInfo.showCsvInfo` | `true` | CSV/TSV columns and headers |
+| `fileInfo.showCsvRows` | `true` | CSV/TSV row count |
+| `fileInfo.showFolderCounts` | `true` | Immediate folder contents |
+| `fileInfo.showFolderDetails` | `false` | Largest/newest child file in folders |
+| `fileInfo.showCreatedTime` | `true` | Created time |
+| `fileInfo.showAccessedTime` | `false` | Last accessed time |
+| `fileInfo.showFileType` | `true` | File type and extension |
+| `fileInfo.showMimeType` | `false` | MIME type |
+| `fileInfo.showPermissions` | `false` | Read-only / executable hints |
+| `fileInfo.showSymlinkTarget` | `true` | Symbolic link target |
+| `fileInfo.showLineCount` | `true` | Text line count |
+| `fileInfo.showWordCount` | `true` | Markdown word count |
+| `fileInfo.showEncoding` | `false` | Basic encoding detection |
+| `fileInfo.showNewline` | `false` | LF / CRLF / mixed newlines |
+| `fileInfo.showHash` | `false` | Short SHA-256 hash for files up to 10 MB |
+| `fileInfo.showGitStatus` | `true` | Git clean/modified/staged/untracked status |
+| `fileInfo.showGitLastCommit` | `false` | Latest Git commit summary |
+| `fileInfo.showGitIgnored` | `false` | Git ignored status |
+| `fileInfo.showTodoCount` | `true` | TODO / FIXME count |
+| `fileInfo.showPackageVersion` | `true` | `package.json` version |
+| `fileInfo.showJsonInfo` | `true` | JSON validity and top-level size |
+| `fileInfo.showMarkdownInfo` | `true` | Markdown heading/link/image counts |
+
 ### Tooltip styles
 
-**compact** — everything on one line:
+**compact** — denser inline metadata:
 ```
-📄 README.md  ·  Mar 12, 2:14 PM  ·  4.2 KB  ·  ✎ Check before merging
+📄 README.md
+2h ago
+📅 Modified: 3/12/2026, 2:14:00 PM  ·  4.2 KB  ·  ✎ Check before merging
 ```
 
 **detailed** *(default)* — labeled rows with icons:
 ```
 📄 README.md
-📅 Modified: March 12, 2026 at 2:14 PM
+2h ago
+📅 Modified: 3/12/2026, 2:14:00 PM
 📦 Size: 4.2 KB
 ✎  Note: Check before merging
 ```
 
 **card** — sectioned layout with dividers and headers (best for the File Info panel).
 
-### Date formats
+### Time zones
 
-| Value | Example |
-|---|---|
-| `short` | Mar 12, 2:14 PM |
-| `relative` | 2h ago |
-| `full` | 3/12/2026, 14:14:00 |
+Use `fileInfo.timeZoneOffset` to control how modified timestamps are shown:
+
+- `system` — use your current OS time zone
+- `UTC+8`, `UTC-5`, etc. — use a fixed UTC offset
 
 ---
 

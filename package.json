@@ -2,7 +2,7 @@
   "name": "file-info-explorer",
   "displayName": "File Info Explorer",
   "description": "Shows last modified dates and sticky notes for files and folders in the Explorer.",
-  "version": "0.4.0",
+  "version": "0.4.3",
   "publisher": "mmarj",
   "icon": "images/icon.png",
   "license": "MIT",
@@ -90,16 +90,165 @@
           "default": true,
           "description": "Show the last modified date in the tooltip when hovering over files and folders in the Explorer."
         },
-        "fileInfo.dateFormat": {
+        "fileInfo.timeZoneOffset": {
           "type": "string",
-          "enum": ["short", "relative", "full"],
-          "enumDescriptions": [
-            "Mar 12, 2:14 PM — compact and readable",
-            "2h ago, 3d ago — relative to now",
-            "3/12/2026, 14:14:00 — exact timestamp"
+          "enum": [
+            "system",
+            "UTC-12",
+            "UTC-11",
+            "UTC-10",
+            "UTC-9",
+            "UTC-8",
+            "UTC-7",
+            "UTC-6",
+            "UTC-5",
+            "UTC-4",
+            "UTC-3",
+            "UTC-2",
+            "UTC-1",
+            "UTC+0",
+            "UTC+1",
+            "UTC+2",
+            "UTC+3",
+            "UTC+4",
+            "UTC+5",
+            "UTC+6",
+            "UTC+7",
+            "UTC+8",
+            "UTC+9",
+            "UTC+10",
+            "UTC+11",
+            "UTC+12",
+            "UTC+13",
+            "UTC+14"
           ],
-          "default": "short",
-          "description": "Date format used in tooltips and the File Info panel."
+          "default": "system",
+          "description": "Time zone used for modified timestamps. Use system for the current OS time zone, or choose a fixed UTC offset like UTC+8."
+        },
+        "fileInfo.showFileSize": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show file size in tooltips."
+        },
+        "fileInfo.showFolderSize": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show recursive folder size in the File Info panel."
+        },
+        "fileInfo.showImageDimensions": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show image dimensions for supported image files."
+        },
+        "fileInfo.showCsvInfo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CSV/TSV column details."
+        },
+        "fileInfo.showCsvRows": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show CSV/TSV row counts for reasonably small files."
+        },
+        "fileInfo.showFolderCounts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show immediate file and folder counts for folders."
+        },
+        "fileInfo.showFolderDetails": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show recursive folder details like largest and newest child file. Disabled by default because it can be expensive in large folders."
+        },
+        "fileInfo.showCreatedTime": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show file or folder creation time."
+        },
+        "fileInfo.showAccessedTime": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show last accessed time. Disabled by default because access times can be noisy."
+        },
+        "fileInfo.showFileType": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show detected file type and extension."
+        },
+        "fileInfo.showMimeType": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show MIME type when it can be inferred from the file extension."
+        },
+        "fileInfo.showPermissions": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show simple permission hints such as read-only or executable."
+        },
+        "fileInfo.showSymlinkTarget": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the target of symbolic links."
+        },
+        "fileInfo.showLineCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show text file line counts for reasonably small files."
+        },
+        "fileInfo.showWordCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Markdown word counts."
+        },
+        "fileInfo.showEncoding": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show basic encoding detection such as UTF-8 or binary."
+        },
+        "fileInfo.showNewline": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show detected newline style such as LF or CRLF."
+        },
+        "fileInfo.showHash": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show a short SHA-256 hash for files up to 10 MB."
+        },
+        "fileInfo.showGitStatus": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Git status such as clean, modified, staged, or untracked."
+        },
+        "fileInfo.showGitLastCommit": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show the latest Git commit summary for the file. Disabled by default because it runs an extra Git query."
+        },
+        "fileInfo.showGitIgnored": {
+          "type": "boolean",
+          "default": false,
+          "description": "Show when a file is ignored by Git."
+        },
+        "fileInfo.showTodoCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show TODO and FIXME counts in text files."
+        },
+        "fileInfo.showPackageVersion": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show the version field for package.json files."
+        },
+        "fileInfo.showJsonInfo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show JSON validity and top-level object or array size."
+        },
+        "fileInfo.showMarkdownInfo": {
+          "type": "boolean",
+          "default": true,
+          "description": "Show Markdown heading, link, and image counts."
         },
         "fileInfo.showNoteBadge": {
           "type": "boolean",
@@ -110,7 +259,7 @@
           "type": "string",
           "enum": ["compact", "detailed", "card"],
           "enumDescriptions": [
-            "compact — single line: filename · date · note",
+            "compact — denser inline metadata",
             "detailed — multi-line with bold labels (default)",
             "card — sectioned layout with dividers and headers"
           ],

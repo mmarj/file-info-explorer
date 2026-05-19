@@ -1,5 +1,14 @@
 # Changelog
 
+## [0.4.3]
+
+- Improve hover tooltip layout so file path/name and modified date can appear on separate lines
+- Format modified timestamps with the current time zone explicitly
+- Add a `fileInfo.timeZoneOffset` setting for fixed UTC offsets such as `UTC+8`
+- Remove the `fileInfo.dateFormat` setting and always show both relative and full modified times
+- Hide the time zone suffix from full modified timestamps
+- Add settings-controlled metadata for created/accessed times, file type, MIME type, permissions, symlinks, text stats, Git status, hashes, package versions, JSON/Markdown info, and folder details
+
 ## [0.4.0]
 
 - Display image dimensions (width × height) on hover for PNG, JPEG, GIF, WebP, BMP, SVG, ICO — zero dependencies, parsed from raw file headers

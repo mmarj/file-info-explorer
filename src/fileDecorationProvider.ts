@@ -1,11 +1,15 @@
 import * as vscode from 'vscode';
+import * as fs from 'fs';
 import { NotesManager } from './notesManager';
 import { buildPlainTooltip, TooltipStyle } from './tooltipBuilder';
+import type { TimeZoneOffset } from './dateFormatter';
 import {
   FileMeta,
   isImageFile, isCsvFile,
   readImageMeta, readCsvMeta, countFolderEntries,
+  readFolderDetails, readGeneralMeta,
 } from './fileMetaReader';
+import { getDisplaySettings } from './settings';
 
 export class FileDecorationProvider implements vscode.FileDecorationProvider {
   private _onDidChange = new vscode.EventEmitter<vscode.Uri | vscode.Uri[]>();
@@ -26,9 +30,10 @@ export class FileDecorationProvider implements vscode.FileDecorationProvider {
   ): Promise<vscode.FileDecoration | undefined> {
     const config = vscode.workspace.getConfiguration('fileInfo');
     const showOnHover = config.get<boolean>('showDateOnHover', true);
-    const dateFormat = config.get<'short' | 'relative' | 'full'>('dateFormat', 'short');
+    const timeZoneOffset = config.get<TimeZoneOffset>('timeZoneOffset', 'system');
     const tooltipStyle = config.get<TooltipStyle>('tooltipStyle', 'detailed');
     const showBadge = config.get<boolean>('showNoteBadge', true);
+    const displaySettings = getDisplaySettings();
 
     const note = this.notes.getNote(uri.fsPath);
     const hasNote = !!note;
@@ -44,23 +49,47 @@ export class FileDecorationProvider implements vscode.FileDecorationProvider {
     if (showOnHover) {
       try {
         const stat = await vscode.workspace.fs.stat(uri);
+        const nodeStat = fs.statSync(uri.fsPath);
         const mtime = new Date(stat.mtime);
         const isFile = stat.type === vscode.FileType.File;
         const isDir  = stat.type === vscode.FileType.Directory;
-        const size   = isFile ? stat.size : undefined;
+        const size   = isFile && displaySettings.showFileSize ? stat.size : undefined;
 
-        let meta: FileMeta | undefined;
+        let meta: FileMeta | undefined = {};
         if (isFile) {
-          if (isImageFile(uri.fsPath)) {
-            try { const image = readImageMeta(uri.fsPath); if (image) meta = { image }; } catch { /* skip */ }
-          } else if (isCsvFile(uri.fsPath)) {
-            try { const csv = readCsvMeta(uri.fsPath); if (csv) meta = { csv }; } catch { /* skip */ }
+          if (displaySettings.showImageDimensions && isImageFile(uri.fsPath)) {
+            try { const image = readImageMeta(uri.fsPath); if (image) meta.image = image; } catch { /* skip */ }
+          } else if (displaySettings.showCsvInfo && isCsvFile(uri.fsPath)) {
+            try {
+              const csv = readCsvMeta(uri.fsPath, displaySettings.showCsvRows);
+              if (csv) meta.csv = csv;
+            } catch { /* skip */ }
           }
         } else if (isDir) {
-          try { meta = { folderCount: countFolderEntries(uri.fsPath) }; } catch { /* skip */ }
+          if (displaySettings.showFolderCounts) {
+            try { meta.folderCount = countFolderEntries(uri.fsPath); } catch { /* skip */ }
+          }
+          if (displaySettings.showFolderDetails) {
+            try { meta.folderDetails = readFolderDetails(uri.fsPath); } catch { /* skip */ }
+          }
         }
 
-        tooltip = buildPlainTooltip(mtime, note ?? undefined, tooltipStyle, dateFormat, size, meta);
+        const general = readGeneralMeta(uri.fsPath, nodeStat, isDir, displaySettings);
+        if (general) {
+          meta.general = general;
+        }
+        if (Object.keys(meta).length === 0) {
+          meta = undefined;
+        }
+
+        tooltip = buildPlainTooltip(
+          mtime,
+          note ?? undefined,
+          tooltipStyle,
+          size,
+          meta,
+          timeZoneOffset
+        );
       } catch {
         // File may not be accessible (e.g. permission denied) — skip
         if (note) {
