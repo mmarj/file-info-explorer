@@ -2,13 +2,15 @@ import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
 import { NotesManager } from './notesManager';
-import { formatDate } from './dateFormatter';
+import { formatDate, type TimeZoneOffset } from './dateFormatter';
 import { buildRichTooltip, TooltipStyle } from './tooltipBuilder';
 import {
   FileMeta,
   isImageFile, isCsvFile,
   readImageMeta, readCsvMeta, countFolderEntries,
+  readFolderDetails, readGeneralMeta,
 } from './fileMetaReader';
+import { getDisplaySettings } from './settings';
 
 // ─── Tree Item ────────────────────────────────────────────────────────────────
 
@@ -24,17 +26,26 @@ export class FileInfoItem extends vscode.TreeItem {
     super(resourceUri, collapsibleState);
 
     const config = vscode.workspace.getConfiguration('fileInfo');
-    const dateFormat = config.get<'short' | 'relative' | 'full'>('dateFormat', 'short');
+    const timeZoneOffset = config.get<TimeZoneOffset>('timeZoneOffset', 'system');
     const tooltipStyle = config.get<TooltipStyle>('tooltipStyle', 'detailed');
     const note = notes.getNote(resourceUri.fsPath);
     const hasNote = !!note;
     const isDir = collapsibleState !== vscode.TreeItemCollapsibleState.None;
 
     // Date shown to the right of the label (grayed-out description)
-    this.description = formatDate(mtime, dateFormat);
+    this.description = formatDate(mtime, 'relative');
 
     // Rich tooltip
-    this.tooltip = buildRichTooltip(resourceUri.fsPath, mtime, note ?? undefined, tooltipStyle, isDir, size, meta);
+    this.tooltip = buildRichTooltip(
+      resourceUri.fsPath,
+      mtime,
+      note ?? undefined,
+      tooltipStyle,
+      isDir,
+      size,
+      meta,
+      timeZoneOffset
+    );
 
     // Context value controls which menu items appear
     this.contextValue = hasNote ? 'hasNote' : 'noNote';
@@ -132,6 +143,7 @@ export class FileInfoProvider implements vscode.TreeDataProvider<FileInfoItem> {
   }
 
   private makeItem(uri: vscode.Uri): FileInfoItem {
+    const displaySettings = getDisplaySettings();
     let mtime = new Date();
     let isDir = false;
     let size: number | undefined;
@@ -143,15 +155,37 @@ export class FileInfoProvider implements vscode.TreeDataProvider<FileInfoItem> {
       isDir = stat.isDirectory();
 
       if (isDir) {
-        size = getDirSize(uri.fsPath);
-        try { meta = { folderCount: countFolderEntries(uri.fsPath) }; } catch { /* skip */ }
-      } else {
-        size = stat.size;
-        if (isImageFile(uri.fsPath)) {
-          try { const image = readImageMeta(uri.fsPath); if (image) meta = { image }; } catch { /* skip */ }
-        } else if (isCsvFile(uri.fsPath)) {
-          try { const csv = readCsvMeta(uri.fsPath); if (csv) meta = { csv }; } catch { /* skip */ }
+        meta = {};
+        if (displaySettings.showFolderSize) {
+          size = getDirSize(uri.fsPath);
         }
+        if (displaySettings.showFolderCounts) {
+          try { meta.folderCount = countFolderEntries(uri.fsPath); } catch { /* skip */ }
+        }
+        if (displaySettings.showFolderDetails) {
+          try { meta.folderDetails = readFolderDetails(uri.fsPath); } catch { /* skip */ }
+        }
+      } else {
+        meta = {};
+        if (displaySettings.showFileSize) {
+          size = stat.size;
+        }
+        if (displaySettings.showImageDimensions && isImageFile(uri.fsPath)) {
+          try { const image = readImageMeta(uri.fsPath); if (image) meta = { image }; } catch { /* skip */ }
+        } else if (displaySettings.showCsvInfo && isCsvFile(uri.fsPath)) {
+          try {
+            const csv = readCsvMeta(uri.fsPath, displaySettings.showCsvRows);
+            if (csv) meta.csv = csv;
+          } catch { /* skip */ }
+        }
+      }
+
+      const general = readGeneralMeta(uri.fsPath, stat, isDir, displaySettings);
+      if (general) {
+        meta = { ...(meta ?? {}), general };
+      }
+      if (meta && Object.keys(meta).length === 0) {
+        meta = undefined;
       }
     } catch {
       // Inaccessible — use defaults
